@@ -1,31 +1,36 @@
-site='http://stankin.ru'
 import re
 import requests
 import time
-pattern=re.compile(r'href="(?P<url>[a-zA-Z0-9:/&?=/.-]+)"')
+site = "http://stankin.ru"
 
-def foo(addr, index):
-  html=requests.get(addr).text
+pattern=re.compile(r'href="(?P<url>[a-zA-Z0-9:/&?=/.-]+)"')
+#html=requests.get("http://stankin.ru").text
+#links=pattern.findall(html)
+all_links = []
+full_links = []
+def get_links(address, index):
+  html=requests.get(address).text
   links=pattern.findall(html)
-  new_links=[]
-  for item in links:
-    if item.endswith('.png'):
+  next_links = []
+  for link in links:
+    if ".png" in link:
       continue
-    if item.startswith('/'):
-      new_links.append (site+item)
-    elif not item.startswith('/') and not item.startswith('http://'):
-      new_links.append (addr+'/'+item) 
-    elif 'stankin.ru' in item:
-      new_links.append(item)
+    elif ".css" in link:
+      continue
+    elif link.startswith("/"):
+      full_links.append(site + link)
+    elif not link.startswith('http') and not link.startswith('/'):
+      full_links.append(site + '/' + link)
+    else:
+      full_links.append(link)
   if (index-1<0):
-    return new_links
-  all_links =[]
-  for item in new_links:
-    print(item)
+    return next_links
+  for link in full_links:
+    print (link)
     time.sleep(2)
-    current_links = foo(item,index-1)
-    all_links.extend(current_links)
-  new_links.extend(all_links)
-  return new_links
-for item in foo(site,2):
-  print (item)
+    next_links = get_links(link, index - 1)
+    all_links.extend(next_links)
+  full_links.extend(all_links)
+  return full_links
+for link in get_links(site, 2):
+  print (link)
